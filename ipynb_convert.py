@@ -20,6 +20,113 @@ def mkdir_p(target_dir):
         os.makedirs(target_dir)
 
 
+class IpynbController:
+    def __init__(self, ipynb_file):
+        self.png_bin_dict = {}
+        self.wav_bin_dict = {}
+        self.png_count = 0
+        self.wav_count = 0
+        self.ipynb_file = ipynb_file
+
+        self.img_out_dir = ""
+        self.wav_out_dir = ""
+
+        self.copied_ipynb_json = None
+
+
+    def is_code_cell(self, cell):
+        return cell["cell_type"] == "code"
+
+
+    def is_output_include_images(self, output):
+        return ("data" in output) and ("image/png" in output["data"])
+
+
+    def is_output_include_html(self, output):
+        return ("data" in output) and ("text/html" in output["data"])
+
+
+    def save_binaries(self, fname_bin_dict):
+        for fname, binary in fname_bin_dict.items():
+            with open(fname, "wb") as wfp:
+                wfp.write(binary)
+
+
+    def save_images(self):
+        self.save_binaries(self.png_bin_dict)
+
+
+    def save_waves(self):
+        self.save_binaries(self.wav_bin_dict)
+
+
+    def processing_image(self, data, image_base64):
+        png_bin = base64.b64decode(image_base64)
+        png_fname = "{0}/{1}.png".format(self.img_out_dir, self.png_count)
+        self.png_bin_dict[png_fname] = png_bin
+        self.png_count += 1
+
+        # remove "image/png" entry and add "text/html" entry to add img tag
+        new_html = data.get("text/html", [])
+        # img_tag = '<img src=\"/{0}\" />'.format(png_fname)  # for blog
+        img_tag = '<img src=\"{0}\" />'.format(png_fname)
+        new_html.append(img_tag)
+        return new_html
+
+
+    def processing_bs4_audio_tag(self, audio_tag):
+        src_tag = audio_tag.find("source")
+        wav_b64 = src_tag.get("src").split(",")[-1]
+        wav_bin = base64.b64decode(wav_b64)
+        wav_fname = "{0}/{1}.wav".format(self.wav_out_dir, self.wav_count)
+        self.wav_bin_dict[wav_fname] = wav_bin
+        self.wav_count += 1
+
+        # update content in "text/html" with new audio tag
+        new_tag = '<audio controls preload=\"none\"><source src=\"{0}\" type=\"audio/wav\" /></audio>'.format(wav_fname.replace("files", ""))
+        # new_tag = '<audio controls src=\"{0}\"></audio>'.format(wav_fname.replace("files", ""))
+        return new_tag
+
+
+    def convert_and_save_ipynb(self, img_out_dir, wav_out_dir):
+        self.img_out_dir = img_out_dir
+        self.wav_out_dir = wav_out_dir
+        with open(self.ipynb_file, "r") as fp:
+            ipynb_json = json.load(fp)
+            self.copied_ipynb_json = copy.deepcopy(ipynb_json)
+
+            del self.copied_ipynb_json["cells"]
+            self.copied_ipynb_json["cells"] = []
+
+            for cell in ipynb_json["cells"]:
+                new_cell = copy.deepcopy(cell)
+
+                if self.is_code_cell(cell):
+                    for j, output in enumerate(cell["outputs"]):
+                        if self.is_output_include_images(output):
+                            new_html = self.processing_image(output["data"], output["data"]["image/png"])
+
+                            del new_cell["outputs"][j]["data"]["image/png"]
+                            new_cell["outputs"][j]["data"]["text/html"] = new_html
+
+                        if self.is_output_include_html(output):
+                            html = "".join(output["data"]["text/html"])
+                            soup = bs4.BeautifulSoup(html, features="lxml")
+                            audio_tag = soup.find("audio")
+                            if audio_tag:
+                                new_tag = self.processing_bs4_audio_tag(audio_tag)
+                                new_cell["outputs"][j]["data"]["text/html"] = new_tag
+                            else:
+                                print("no audio tag")
+
+                self.copied_ipynb_json["cells"].append(new_cell)
+
+
+    def save_new_json(self, new_ipynb_filename):
+        with open(new_ipynb_filename, "w") as wfp:
+            json.dump(self.copied_ipynb_json, wfp, ensure_ascii=False, indent=4, sort_keys=True)
+
+
 def main(argv):
     ipynb_file = argv[1]
     img_out_dir = argv[2]
@@ -29,68 +136,14 @@ def main(argv):
     mkdir_p(img_out_dir)
     mkdir_p(wav_out_dir)
 
-    # ipynb_json = json.loads("".join(open(ipynb_file, "r").readlines()))
-    with open(ipynb_file, "r") as fp:
-        ipynb_json = json.load(fp)
+    new_ipynb_filename = ipynb_file + ".new.ipynb"
 
-        new_json = copy.deepcopy(ipynb_json)
+    ipynb_controller = IpynbController(ipynb_file)
 
-        png_count = 0
-        wav_count = 0
-        # ==================================================
-        # start loop
-        # ==================================================
-        for i, cell in enumerate(ipynb_json["cells"]):
-            if cell["cell_type"] == "code":
-                new_cell = copy.deepcopy(cell)
-
-                for j, output in enumerate(cell["outputs"]):
-                    if "data" in output and "image/png" in output["data"]:
-                        png_b64 = output["data"]["image/png"]
-                        png_bin = base64.b64decode(png_b64)
-                        png_fname = "{0}/{1}.png".format(img_out_dir, png_count)
-                        with open(png_fname, "wb") as wfp:
-                            wfp.write(png_bin)
-                            png_count += 1
-
-                        # remove "image/png" entry and add "text/html" entry to add img tag
-                        del new_cell["outputs"][j]["data"]["image/png"]
-                        html = output["data"].get("text/html", [])
-                        # img_tag = '<img src=\"/{0}\" />'.format(png_fname)  # for blog
-                        img_tag = '<img src=\"{0}\" />'.format(png_fname)
-                        html.append(img_tag)
-                        new_cell["outputs"][j]["data"]["text/html"] = html
-
-                    if "data" in output and "text/html" in output["data"]:
-                        html = "".join(output["data"]["text/html"])
-                        soup = bs4.BeautifulSoup(html, features="lxml")
-                        audio_tag = soup.find("audio")
-                        if audio_tag:
-                            src_tag = audio_tag.find("source")
-                            wav_b64 = src_tag.get("src").split(",")[-1]
-                            wav_bin = base64.b64decode(wav_b64)
-                            wav_fname = "{0}/{1}.wav".format(wav_out_dir, wav_count)
-                            with open(wav_fname, "wb") as wfp:
-                                wfp.write(wav_bin)
-                                wav_count += 1
-                            # update content in "text/html" with new audio tag
-                            new_tag = '<audio controls preload=\"none\"><source src=\"{0}\" type=\"audio/wav\" /></audio>'.format(wav_fname.replace("files", ""))
-                            # new_tag = '<audio controls src=\"{0}\"></audio>'.format(wav_fname.replace("files", ""))
-                            new_cell["outputs"][j]["data"]["text/html"] = new_tag
-                            #del new_cell["outputs"][j]["data"]["text/html"]
-                        else:
-                            print("no audio tag")
-
-                new_json["cells"][i] = new_cell
-            else:
-                new_json["cells"][i] = cell
-        # ==================================================
-        # end loop
-        # ==================================================
-
-        with open(ipynb_file + ".new.ipynb", "w") as wfp:
-            # json.dump(new_json, wfp, ensure_ascii=False, indent=4, sort_keys=True, separators=('',': '))
-            json.dump(new_json, wfp, ensure_ascii=False, indent=4, sort_keys=True)
+    ipynb_controller.convert_and_save_ipynb(img_out_dir, wav_out_dir)
+    ipynb_controller.save_images()
+    ipynb_controller.save_waves()
+    ipynb_controller.save_new_json(new_ipynb_filename)
 
 
 if __name__ == '__main__':
