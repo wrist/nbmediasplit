@@ -6,13 +6,13 @@
 """
 
 import os
-import sys
 import json
 import base64
 import copy
 from pprint import pprint as pp
 
 import bs4
+import click
 
 
 def mkdir_p(target_dir):
@@ -127,11 +127,11 @@ class IpynbController:
             json.dump(self.copied_ipynb_json, wfp, ensure_ascii=False, indent=4, sort_keys=True)
 
 
-def main():
-    ipynb_file  = sys.argv[1]
-    img_out_dir = sys.argv[2]
-    wav_out_dir = sys.argv[3]
-
+@click.command(help='extract base64 encoded image and pcm and save them into specified directories.')
+@click.option('-n', '--ipynb', 'ipynb_file', type=str, help='input ipynb file', required=True)
+@click.option('-i', '--imgdir', 'img_out_dir', type=str, help='directory to store image', required=True)
+@click.option('-w', '--wavdir', 'wav_out_dir', type=str, help='directory to store audio', required=True)
+def main(ipynb_file, img_out_dir, wav_out_dir):
     # mkdir recursively if not exists
     mkdir_p(img_out_dir)
     mkdir_p(wav_out_dir)
