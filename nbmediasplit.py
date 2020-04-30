@@ -127,10 +127,10 @@ class IpynbController:
             json.dump(self.copied_ipynb_json, wfp, ensure_ascii=False, indent=4, sort_keys=True)
 
 
-def main(argv):
-    ipynb_file = argv[1]
-    img_out_dir = argv[2]
-    wav_out_dir = argv[3]
+def main():
+    ipynb_file  = sys.argv[1]
+    img_out_dir = sys.argv[2]
+    wav_out_dir = sys.argv[3]
 
     # mkdir recursively if not exists
     mkdir_p(img_out_dir)
@@ -147,4 +147,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main()

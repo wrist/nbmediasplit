@@ -5,6 +5,9 @@ description = ""
 authors = ["wrist <stoicheia1986@gmail.com>"]
 license = "MIT"
 
+[tool.poetry.scripts]
+nbmediasplit = "nbmediasplit:main"
+
 [tool.poetry.dependencies]
 python = "^3.6"
 beautifulsoup4 = "^4.9"
