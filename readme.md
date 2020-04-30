@@ -2,4 +2,4 @@
 
 ### usage ###
 
-`python ./ipynb_convert.py xxx.ipynb image_dir wav_dir`
+`nbmediasplit xxx.ipynb image_dir wav_dir`
