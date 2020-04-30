@@ -1,5 +1,6 @@
 # directories
 __pycache__
+.venv
 .ipynb_checkpoints
 img
 wav
