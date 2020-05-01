@@ -128,15 +128,17 @@ class IpynbController:
 
 
 @click.command(help='extract base64 encoded image and pcm and save them into specified directories.')
-@click.option('-n', '--ipynb', 'ipynb_file', type=str, help='input ipynb file', required=True)
+@click.option('-n', '--ipynb', 'ipynb_file', type=str, help='input ipynb file path', required=True)
 @click.option('-i', '--imgdir', 'img_out_dir', type=str, help='directory to store image', required=True)
 @click.option('-w', '--wavdir', 'wav_out_dir', type=str, help='directory to store audio', required=True)
-def main(ipynb_file, img_out_dir, wav_out_dir):
+@click.option('-o', '--output', 'new_ipynb_filename', type=str, help='output ipynb file path', required=False)
+def main(ipynb_file, img_out_dir, wav_out_dir, new_ipynb_filename=None):
     # mkdir recursively if not exists
     mkdir_p(img_out_dir)
     mkdir_p(wav_out_dir)
 
-    new_ipynb_filename = ipynb_file + ".new.ipynb"
+    if new_ipynb_filename is None:
+        new_ipynb_filename = ipynb_file + ".new.ipynb"
 
     ipynb_controller = IpynbController(ipynb_file)
 
