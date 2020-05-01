@@ -7,4 +7,4 @@ wav
 tmp
 
 # files
-*.ipynb
+#*.ipynb
