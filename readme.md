@@ -10,6 +10,8 @@ or
 
 `nbmediasplit --ipynb xxx.ipynb --imgdir image_out_dir --wavdir wav_out_dir --output xxx.converted.ipynb`
 
+Other options are shown by `nbmediasplit --help`
+
 ### note ###
 
 Unless you trust the notebook converted by nbmediasplit in jupyter notebook/jupyter lab, you can't load audio source in Jupyter.

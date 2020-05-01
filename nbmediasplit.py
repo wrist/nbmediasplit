@@ -5,11 +5,13 @@ import os
 import json
 import base64
 import copy
+import logging
 from pprint import pprint as pp
 
 import bs4
 import click
 
+#logging.basicConfig(level=logging.DEBUG)
 
 def mkdir_p(target_dir):
     if not os.path.exists(target_dir):
@@ -26,6 +28,9 @@ class IpynbController:
 
         self.img_out_dir = ""
         self.wav_out_dir = ""
+
+        self.img_prefix = None
+        self.wav_prefix = None
 
         self.copied_ipynb_json = None
 
@@ -47,6 +52,11 @@ class IpynbController:
             with open(fname, "wb") as wfp:
                 wfp.write(binary)
 
+    def set_img_prefix(self, img_prefix):
+        self.img_prefix = img_prefix
+
+    def set_wav_prefix(self, wav_prefix):
+        self.wav_prefix = wav_prefix
 
     def save_images(self):
         self.save_binaries(self.png_bin_dict)
@@ -58,15 +68,22 @@ class IpynbController:
 
     def processing_image(self, data, image_base64):
         png_bin = base64.b64decode(image_base64)
+
         png_fname = "{0}/{1}.png".format(self.img_out_dir, self.png_count)
         self.png_bin_dict[png_fname] = png_bin
+
+        if self.img_prefix is not None:
+            png_fname = "{0}/{1}.png".format(self.img_prefix, self.png_count)
+
         self.png_count += 1
 
         # remove "image/png" entry and add "text/html" entry to add img tag
         new_html = data.get("text/html", [])
-        # img_tag = '<img src=\"/{0}\" />'.format(png_fname)  # for blog
         img_tag = '<img src=\"{0}\" />'.format(png_fname)
         new_html.append(img_tag)
+
+        logging.debug(new_html)
+
         return new_html
 
 
@@ -74,13 +91,21 @@ class IpynbController:
         src_tag = audio_tag.find("source")
         wav_b64 = src_tag.get("src").split(",")[-1]
         wav_bin = base64.b64decode(wav_b64)
+
         wav_fname = "{0}/{1}.wav".format(self.wav_out_dir, self.wav_count)
         self.wav_bin_dict[wav_fname] = wav_bin
+
+        if self.wav_prefix is not None:
+            wav_fname = "{0}/{1}.wav".format(self.wav_prefix, self.wav_count)
+
         self.wav_count += 1
 
         # update content in "text/html" with new audio tag
-        new_tag = '<audio controls preload=\"none\"><source src=\"{0}\" type=\"audio/wav\" /></audio>'.format(wav_fname.replace("files", ""))
-        # new_tag = '<audio controls src=\"{0}\"></audio>'.format(wav_fname.replace("files", ""))
+        new_tag = '<audio controls preload=\"none\"><source src=\"{0}\" type=\"audio/wav\" /></audio>'.format(wav_fname)
+        # new_tag = '<audio controls src=\"{0}\"></audio>'.format(wav_fname)
+
+        logging.debug(new_tag)
+
         return new_tag
 
 
@@ -128,7 +153,9 @@ class IpynbController:
 @click.option('-i', '--imgdir', 'img_out_dir', type=str, help='directory to store image', required=True)
 @click.option('-w', '--wavdir', 'wav_out_dir', type=str, help='directory to store audio', required=True)
 @click.option('-o', '--output', 'new_ipynb_filename', type=str, help='output ipynb file path', required=False)
-def main(ipynb_file, img_out_dir, wav_out_dir, new_ipynb_filename=None):
+@click.option('--img-prefix', 'img_prefix', type=str, help='path prefix for src attribute of img tag', required=False)
+@click.option('--wav-prefix', 'wav_prefix', type=str, help='path prefix for src attribute of source tag under audio tag', required=False)
+def main(ipynb_file, img_out_dir, wav_out_dir, new_ipynb_filename=None, img_prefix=None, wav_prefix=None):
     # mkdir recursively if not exists
     mkdir_p(img_out_dir)
     mkdir_p(wav_out_dir)
@@ -137,6 +164,11 @@ def main(ipynb_file, img_out_dir, wav_out_dir, new_ipynb_filename=None):
         new_ipynb_filename = ipynb_file + ".new.ipynb"
 
     ipynb_controller = IpynbController(ipynb_file)
+
+    if img_prefix is not None:
+        ipynb_controller.set_img_prefix(img_prefix)
+    if wav_prefix is not None:
+        ipynb_controller.set_wav_prefix(wav_prefix)
 
     ipynb_controller.convert_and_save_ipynb(img_out_dir, wav_out_dir)
     ipynb_controller.save_images()
