@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 # vim:fileencoding=utf-8
 
-"""extract base64 encoded image and pcm and save them into specified directories.
-   [usage] $ nbmediasplit -n ipynb_file -i img_dir -w wav_dir
-"""
-
 import os
 import json
 import base64
