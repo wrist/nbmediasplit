@@ -1,4 +1,4 @@
-.PHONY: test
+.PHONY: test clean deploy deploytest
 
 test:
 	# image extract test
