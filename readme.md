@@ -2,6 +2,10 @@
 
 `nbmediasplit` is a script to extract base64 encoded image and audio pcm embedded in .ipynb file and save them into specified directories.
 
+## install
+
+`pip install nbmediasplit`
+
 ## usage
 
 ### extract image files from ipynb
@@ -15,7 +19,7 @@ or
 Above command extract image files from `input.ipynb` and store them to `image_out_dir`.
 `-n` or `--ipynb` specifies input ipynb file.
 `-i` or `--imgdir` specifies directory to store image files.
-Stored filenames of image are named with sequential number(`0.png`, ...).
+Filenames of stored image are numbered in a sequential order(`0.png`, ...).
 
 ### extract audio files from ipynb
 
@@ -28,7 +32,7 @@ or
 Above command extract audio files from `input.ipynb` and store them to `wav_out_dir`.
 `-n` or `--ipynb` specifies input ipynb file.
 `-w` or `--wavdir` specifies directory to store audio files.
-Stored filenames of audio are named with sequential number(`0.wav`, ...).
+Filenames of stored audio are numbered in a sequential order(`0.wav`, ...).
 
 ### extract image and audio files from ipynb
 
@@ -46,8 +50,8 @@ Above command do below things.
 `-n` or `--ipynb` specifies input ipynb file.
 `-i` or `--imgdir` specifies directory to store image files.
 `-w` or `--wavdir` specifies directory to store audio files.
-Stored filenames of image are named with sequential number(`0.png`, ...).
-Stored filenames of audio are named with sequential number(`0.wav`, ...).
+Filenames of stored image are numbered in a sequential order(`0.png`, ...).
+Filenames of stored audio are numbered in a sequential order(`0.wav`, ...).
 
 ### extract image and audio files from ipynb and convert ipynb
 
