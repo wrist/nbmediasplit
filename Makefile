@@ -23,3 +23,11 @@ clean:
 	rm -rf test/wav
 	rm -rf test/img
 	rm test/test.converted.ipynb
+
+deploy:
+	poetry build
+	poetry publish
+
+deploytest:
+	poetry build
+	poetry publish -r testpypi

@@ -1,9 +1,10 @@
 [tool.poetry]
 name = "nbmediasplit"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["wrist <stoicheia1986@gmail.com>"]
 license = "MIT"
+readme = "readme.md"
 
 [tool.poetry.scripts]
 nbmediasplit = "nbmediasplit:main"

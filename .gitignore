@@ -5,6 +5,7 @@ __pycache__
 img
 wav
 tmp
+dist
 
 # files
 #*.ipynb
