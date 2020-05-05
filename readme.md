@@ -1,7 +1,7 @@
 # nbmediasplit
 
 `nbmediasplit` is a script to extract base64 encoded image and audio pcm embedded in .ipynb file and save them into specified directories.
-`nbmediasplit` also convert ipynb file to new one which refers stored image and audio files.
+`nbmediasplit` also converts ipynb file to new one which refers stored image and audio files.
 
 ## install
 
