@@ -6,6 +6,7 @@ img
 wav
 tmp
 dist
+src/nbmediasplit.egg-info
 
 # files
 #*.ipynb
