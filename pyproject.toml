@@ -5,6 +5,7 @@ description = ""
 authors = ["wrist <stoicheia1986@gmail.com>"]
 license = "MIT"
 readme = "readme.md"
+repository = "https://github.com/wrist/nbmediasplit"
 
 [tool.poetry.scripts]
 nbmediasplit = "nbmediasplit:main"
