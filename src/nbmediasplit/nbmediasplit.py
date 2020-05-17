@@ -11,7 +11,8 @@ from pprint import pprint as pp
 import bs4
 import click
 
-#logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
+
 
 def mkdir_p(target_dir):
     """mkdir recursively if not exists"""
@@ -35,24 +36,19 @@ class NBMediaSplitter:
 
         self.copied_ipynb_json = None
 
-
     def _is_code_cell(self, cell):
         return cell["cell_type"] == "code"
-
 
     def _is_output_include_images(self, output):
         return ("data" in output) and ("image/png" in output["data"])
 
-
     def _is_output_include_html(self, output):
         return ("data" in output) and ("text/html" in output["data"])
-
 
     def _save_binaries(self, fname_bin_dict):
         for fname, binary in fname_bin_dict.items():
             with open(fname, "wb") as wfp:
                 wfp.write(binary)
-
 
     def _processing_image(self, data, image_base64):
         png_bin = base64.b64decode(image_base64)
@@ -73,7 +69,6 @@ class NBMediaSplitter:
         logging.debug(new_html)
 
         return new_html
-
 
     def _processing_bs4_audio_tag(self, audio_tag):
         src_tag = audio_tag.find("source")
@@ -96,32 +91,25 @@ class NBMediaSplitter:
 
         return new_tag
 
-
     def set_img_out_dir(self, img_out_dir):
         mkdir_p(img_out_dir)
         self.img_out_dir = img_out_dir
-
 
     def set_wav_out_dir(self, wav_out_dir):
         mkdir_p(wav_out_dir)
         self.wav_out_dir = wav_out_dir
 
-
     def set_img_prefix(self, img_prefix):
         self.img_prefix = img_prefix
-
 
     def set_wav_prefix(self, wav_prefix):
         self.wav_prefix = wav_prefix
 
-
     def save_images(self):
         self._save_binaries(self.png_bin_dict)
 
-
     def save_waves(self):
         self._save_binaries(self.wav_bin_dict)
-
 
     def extract_and_convert_ipynb(self):
         with open(self.ipynb_file, "r") as fp:
@@ -156,7 +144,6 @@ class NBMediaSplitter:
 
                 self.copied_ipynb_json["cells"].append(new_cell)
 
-
     def save_new_json(self, new_ipynb_filename):
         with open(new_ipynb_filename, "w") as wfp:
             json.dump(self.copied_ipynb_json, wfp, ensure_ascii=False, indent=4, sort_keys=True)
@@ -168,7 +155,8 @@ class NBMediaSplitter:
 @click.option('-w', '--wavdir', 'wav_out_dir', type=str, help='directory to store audio', required=False)
 @click.option('-o', '--output', 'new_ipynb_filename', type=str, help='output ipynb file path', required=False)
 @click.option('--img-prefix', 'img_prefix', type=str, help='path prefix for src attribute of img tag', required=False)
-@click.option('--wav-prefix', 'wav_prefix', type=str, help='path prefix for src attribute of source tag under audio tag', required=False)
+@click.option('--wav-prefix', 'wav_prefix', type=str,
+              help='path prefix for src attribute of source tag under audio tag', required=False)
 def main(ipynb_file, img_out_dir=None, wav_out_dir=None, new_ipynb_filename=None, img_prefix=None, wav_prefix=None):
     splitter = NBMediaSplitter(ipynb_file)
 

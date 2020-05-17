@@ -1,4 +1,4 @@
-.PHONY: test clean deploy deploytest
+.PHONY: test clean deploy deploytest format
 
 test:
 	# image extract test
@@ -18,6 +18,9 @@ test:
 	poetry run nbmediasplit -n test/test.ipynb -i test/img -w test/wav -o test/test.converted.ipynb --img-prefix img --wav-prefix wav
 	ls test/img
 	ls test/wav
+
+format:
+	poetry run autopep8 -a -i src/nbmediasplit/nbmediasplit.py
 
 clean:
 	rm -rf test/wav
