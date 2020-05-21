@@ -1,4 +1,7 @@
-.PHONY: test clean deploy deploytest format
+.PHONY: pytest test clean deploy deploytest format
+
+pytest:
+	poetry run pytest
 
 test:
 	# image extract test
