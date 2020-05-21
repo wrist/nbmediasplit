@@ -28,6 +28,8 @@ class NBMediaSplitter:
         self.wav_count = 0
         self.ipynb_file = ipynb_file
 
+        self.encoding = "utf-8"
+
         self.img_out_dir = None
         self.wav_out_dir = None
 
@@ -91,6 +93,9 @@ class NBMediaSplitter:
 
         return new_tag
 
+    def set_encoding(self, encoding):
+        self.encoding = encoding
+
     def set_img_out_dir(self, img_out_dir):
         mkdir_p(img_out_dir)
         self.img_out_dir = img_out_dir
@@ -112,7 +117,7 @@ class NBMediaSplitter:
         self._save_binaries(self.wav_bin_dict)
 
     def extract_and_convert_ipynb(self):
-        with open(self.ipynb_file, "r") as fp:
+        with open(self.ipynb_file, "r", encoding=self.encoding) as fp:
             ipynb_json = json.load(fp)
             self.copied_ipynb_json = copy.deepcopy(ipynb_json)
 
@@ -154,11 +159,14 @@ class NBMediaSplitter:
 @click.option('-i', '--imgdir', 'img_out_dir', type=str, help='directory to store image', required=False)
 @click.option('-w', '--wavdir', 'wav_out_dir', type=str, help='directory to store audio', required=False)
 @click.option('-o', '--output', 'new_ipynb_filename', type=str, help='output ipynb file path', required=False)
+@click.option('-e', '--encoding', 'encoding', type=str, help='input ipynb encoding', required=False)
 @click.option('--img-prefix', 'img_prefix', type=str, help='path prefix for src attribute of img tag', required=False)
 @click.option('--wav-prefix', 'wav_prefix', type=str,
               help='path prefix for src attribute of source tag under audio tag', required=False)
-def main(ipynb_file, img_out_dir=None, wav_out_dir=None, new_ipynb_filename=None, img_prefix=None, wav_prefix=None):
+def main(ipynb_file, img_out_dir=None, wav_out_dir=None, new_ipynb_filename=None, img_prefix=None, wav_prefix=None, encoding="utf-8"):
     splitter = NBMediaSplitter(ipynb_file)
+
+    splitter.set_encoding(encoding)
 
     if img_out_dir is not None:
         splitter.set_img_out_dir(img_out_dir)
