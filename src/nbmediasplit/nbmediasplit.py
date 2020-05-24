@@ -11,8 +11,6 @@ from pprint import pprint as pp
 import bs4
 import click
 
-# logging.basicConfig(level=logging.DEBUG)
-
 
 def mkdir_p(target_dir):
     """mkdir recursively if not exists"""
@@ -160,10 +158,15 @@ class NBMediaSplitter:
 @click.option('-w', '--wavdir', 'wav_out_dir', type=str, help='directory to store audio', required=False)
 @click.option('-o', '--output', 'new_ipynb_filename', type=str, help='output ipynb file path', required=False)
 @click.option('-e', '--encoding', 'encoding', type=str, help='input ipynb encoding', required=False)
+@click.option('-d', '--debug', 'use_debug', is_flag=True, help='use debug mode', required=False)
 @click.option('--img-prefix', 'img_prefix', type=str, help='path prefix for src attribute of img tag', required=False)
 @click.option('--wav-prefix', 'wav_prefix', type=str,
               help='path prefix for src attribute of source tag under audio tag', required=False)
-def main(ipynb_file, img_out_dir=None, wav_out_dir=None, new_ipynb_filename=None, img_prefix=None, wav_prefix=None, encoding="utf-8"):
+def main(ipynb_file, img_out_dir=None, wav_out_dir=None, new_ipynb_filename=None,
+         img_prefix=None, wav_prefix=None, encoding="utf-8", use_debug=False):
+    if use_debug:
+        logging.basicConfig(level=logging.DEBUG)
+
     splitter = NBMediaSplitter(ipynb_file)
 
     splitter.set_encoding(encoding)
