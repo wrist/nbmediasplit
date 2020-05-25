@@ -39,6 +39,12 @@ class NBMediaSplitter:
     def _is_code_cell(self, cell):
         return cell["cell_type"] == "code"
 
+    def _is_markdown_cell(self, cell):
+        return cell["cell_type"] == "markdown"
+
+    def _is_cell_include_attachments(self, cell):
+        return ("attachments" in cell)
+
     def _is_output_include_images(self, output):
         return ("data" in output) and ("image/png" in output["data"])
 
@@ -50,7 +56,7 @@ class NBMediaSplitter:
             with open(fname, "wb") as wfp:
                 wfp.write(binary)
 
-    def _processing_image(self, data, image_base64):
+    def _processing_image(self, image_base64):
         png_bin = base64.b64decode(image_base64)
 
         png_fname = "{0}/{1}.png".format(self.img_out_dir, self.png_count)
@@ -61,7 +67,10 @@ class NBMediaSplitter:
 
         self.png_count += 1
 
-        # remove "image/png" entry and add "text/html" entry to add img tag
+        return png_fname
+
+    def _replace_image_to_tag(self, data, png_fname):
+        """remove "image/png" entry and add "text/html" entry to add img tag"""
         new_html = data.get("text/html", [])
         img_tag = '<img src=\"{0}\" />'.format(png_fname)
         new_html.append(img_tag)
@@ -129,7 +138,8 @@ class NBMediaSplitter:
                     for i, output in enumerate(cell["outputs"]):
                         if self._is_output_include_images(output):
                             if self.img_out_dir is not None:
-                                new_html = self._processing_image(output["data"], output["data"]["image/png"])
+                                png_fname = self._processing_image(output["data"]["image/png"])
+                                new_html = self._replace_image_to_tag(output["data"], png_fname)
 
                                 del new_cell["outputs"][i]["data"]["image/png"]
                                 new_cell["outputs"][i]["data"]["text/html"] = new_html
@@ -144,6 +154,17 @@ class NBMediaSplitter:
                                     new_cell["outputs"][i]["data"]["text/html"] = new_tag
                             else:
                                 logging.debug("no audio tag in {0}".format(html))
+
+                if self._is_markdown_cell(cell) and self._is_cell_include_attachments(cell):
+                    logging.debug("include attachments")
+                    for fname, data in cell["attachments"].items():
+                        png_fname = self._processing_image(data["image/png"])
+                        logging.debug("{0} => {1}".format(fname, png_fname))
+
+                        # FIXME: below replacement doesn't work, maybe must replace markdown content itself
+                        new_html = self._replace_image_to_tag(data, png_fname)
+                        del new_cell["attachments"][fname]["image/png"]
+                        new_cell["attachments"][fname]["text/html"] = new_html
 
                 self.copied_ipynb_json["cells"].append(new_cell)
 
