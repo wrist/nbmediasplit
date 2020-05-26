@@ -57,7 +57,13 @@ class NBMediaSplitter:
                 wfp.write(binary)
 
     def _processing_image(self, image_base64):
-        png_bin = base64.b64decode(image_base64)
+        png_bin = None
+        if isinstance(image_base64, list):
+            logging.debug("image_base64 is list")
+            image_base64_str = "".join(map(lambda s: s.replace("¥n", ""), image_base64))
+            png_bin = base64.b64decode(image_base64_str)
+        else:
+            png_bin = base64.b64decode(image_base64)
 
         png_fname = "{0}/{1}.png".format(self.img_out_dir, self.png_count)
         self.png_bin_dict[png_fname] = png_bin
