@@ -2,11 +2,10 @@
 __pycache__
 .venv
 .ipynb_checkpoints
-img
-wav
 tmp
 dist
 src/nbmediasplit.egg-info
+tests/output
 
 # files
 #*.ipynb

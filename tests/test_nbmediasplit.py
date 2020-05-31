@@ -3,12 +3,15 @@ from nbmediasplit import nbmediasplit
 
 import pytest
 import os
+import shutil
 import json
 
 cwd = os.path.dirname(__file__)
 
-input_ipynb = "{0}/../test/test.ipynb".format(cwd)
-out_dir = "{0}/out".format(cwd)
+input_ipynb = "{0}/input/test.ipynb".format(cwd)
+out_dir = "{0}/output".format(cwd)
+IMG_OUT_DIR = "{0}/img".format(out_dir)
+WAV_OUT_DIR = "{0}/wav".format(out_dir)
 
 # embeded image is 1px x 1px black
 IMAGE_CODE_CELL = r"""
@@ -71,33 +74,39 @@ def test_version():
 @pytest.fixture
 def splitter():
     splitter = nbmediasplit.NBMediaSplitter(input_ipynb)
+    if os.path.exists(out_dir):
+        shutil.rmtree(out_dir)
+
     yield splitter
 
     # tear down
-    os.rmdir(out_dir)
+    shutil.rmtree(out_dir)
 
 
 @pytest.fixture
 def empty_splitter():
     empty_splitter = nbmediasplit.NBMediaSplitter(None)
+    if os.path.exists(out_dir):
+        shutil.rmtree(out_dir)
+
     yield empty_splitter
 
     # tear down
-    os.rmdir(out_dir)
+    shutil.rmtree(out_dir)
 
 
 def test_set_img_out_dir(splitter):
     assert not os.path.exists(out_dir)
-    splitter.set_img_out_dir(out_dir)
-    assert os.path.exists(out_dir)
+    splitter.set_img_out_dir(IMG_OUT_DIR)
+    assert os.path.exists(IMG_OUT_DIR)
 
 
 def test_processing_image(empty_splitter):
     cell = json.loads(IMAGE_CODE_CELL)
-    empty_splitter.set_img_out_dir(out_dir)
+    empty_splitter.set_img_out_dir(IMG_OUT_DIR)
 
     png_fname = empty_splitter._processing_image(cell["outputs"][0]["data"]["image/png"])
-    exp_fname = "{0}/0.png".format(out_dir)
+    exp_fname = "{0}/0.png".format(IMG_OUT_DIR)
 
     assert png_fname == exp_fname
     # check png_bin_dict
@@ -106,10 +115,10 @@ def test_processing_image(empty_splitter):
 
 def test_processing_list_image(empty_splitter):
     cell = json.loads(LIST_IMAGE_CODE_CELL)
-    empty_splitter.set_img_out_dir(out_dir)
+    empty_splitter.set_img_out_dir(IMG_OUT_DIR)
 
     png_fname = empty_splitter._processing_image(cell["outputs"][0]["data"]["image/png"])
-    exp_fname = "{0}/0.png".format(out_dir)
+    exp_fname = "{0}/0.png".format(IMG_OUT_DIR)
 
     assert png_fname == exp_fname
     # check png_bin_dict
