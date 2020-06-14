@@ -5,10 +5,14 @@ import pytest
 import os
 import shutil
 import json
+import filecmp
+
+import bs4
 
 cwd = os.path.dirname(__file__)
 
-input_ipynb = "{0}/input/test.ipynb".format(cwd)
+INPUT_DIR = "{0}/input".format(cwd)
+input_ipynb = "{0}/test.ipynb".format(INPUT_DIR)
 out_dir = "{0}/output".format(cwd)
 IMG_OUT_DIR = "{0}/img".format(out_dir)
 WAV_OUT_DIR = "{0}/wav".format(out_dir)
@@ -67,6 +71,45 @@ LIST_IMAGE_CODE_CELL = r"""
   }
 """
 
+# embeded audio wave is the first 1pt of 1kHz sin wave in FS48kHz
+AUDIO_CODE_CELL = r"""
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      ""
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "\n",
+       "                <audio  controls=\"controls\" >\n",
+       "                    <source src=\"data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAgLsAAAB3AQACABAAZGF0YQIAAAAAAA==\" type=\"audio/wav\" />\n",
+       "                    Your browser does not support the audio element.\n",
+       "                </audio>\n",
+       "              "
+      ],
+      "text/plain": [
+       "<IPython.lib.display.Audio object>"
+      ]
+     },
+     "execution_count": 2,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# assume embeded by IPython.display.Audio"
+   ]
+  }
+"""
+
 def test_version():
     assert __version__ == '0.1.2'
 
@@ -100,6 +143,10 @@ def test_set_img_out_dir(splitter):
     splitter.set_img_out_dir(IMG_OUT_DIR)
     assert os.path.exists(IMG_OUT_DIR)
 
+def test_set_wav_out_dir(splitter):
+    assert not os.path.exists(out_dir)
+    splitter.set_img_out_dir(WAV_OUT_DIR)
+    assert os.path.exists(WAV_OUT_DIR)
 
 def test_processing_image(empty_splitter):
     cell = json.loads(IMAGE_CODE_CELL)
@@ -124,3 +171,27 @@ def test_processing_list_image(empty_splitter):
     # check png_bin_dict
     assert exp_fname in empty_splitter.png_bin_dict
     # FIXME: check png_bin_dict[png_fname] binary is whether expected image or not
+
+
+def test_processing_audio(empty_splitter):
+    cell = json.loads(AUDIO_CODE_CELL)
+    empty_splitter.set_wav_out_dir(WAV_OUT_DIR)
+
+    for i, output in enumerate(cell["outputs"]):
+        if empty_splitter._is_output_include_html(output):
+            html = "".join(output["data"]["text/html"])
+            soup = bs4.BeautifulSoup(html, features="lxml")
+            audio_tag = soup.find("audio")
+
+            if audio_tag:
+                if empty_splitter.wav_out_dir is not None:
+                    new_tag = empty_splitter._processing_bs4_audio_tag(audio_tag)
+
+                    exp_fname = "{0}/0.wav".format(WAV_OUT_DIR)
+                    exp_tag = '<audio controls preload=\"none\"><source src=\"{0}\" type=\"audio/wav\" /></audio>'.format(exp_fname)
+
+                    assert new_tag == exp_tag
+                    assert exp_fname in empty_splitter.wav_bin_dict
+
+    empty_splitter.save_waves()
+    assert filecmp.cmp(exp_fname, "{0}/sin1kHz_1pt_FS48kHz.wav".format(INPUT_DIR))
