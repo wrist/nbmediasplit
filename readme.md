@@ -1,3 +1,5 @@
+![pytest](https://github.com/wrist/nbmediasplit/workflows/Execute%20pytest%20using%20poetry/badge.svg)
+
 # nbmediasplit
 
 `nbmediasplit` is a script to extract base64 encoded image and audio PCM embedded in .ipynb file and save them into specified directories.
