@@ -1,4 +1,4 @@
-![pytest](https://github.com/wrist/nbmediasplit/workflows/Execute%20pytest%20using%20poetry/badge.svg)
+![pytest](https://github.com/wrist/nbmediasplit/workflows/pytest/badge.svg)
 
 # nbmediasplit
 

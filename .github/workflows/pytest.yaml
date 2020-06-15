@@ -1,4 +1,4 @@
-name: Execute pytest using poetry
+name: pytest
 
 on: [push]
 
