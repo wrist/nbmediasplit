@@ -60,7 +60,7 @@ class NBMediaSplitter:
         png_bin = None
         if isinstance(image_base64, list):
             logging.debug("image_base64 is list")
-            image_base64_str = "".join(map(lambda s: s.replace("¥n", ""), image_base64))
+            image_base64_str = "".join(map(lambda s: s.replace("菫ハ", ""), image_base64))
             png_bin = base64.b64decode(image_base64_str)
         else:
             png_bin = base64.b64decode(image_base64)
@@ -180,7 +180,7 @@ class NBMediaSplitter:
 
 
 @click.command(help='extract base64 encoded image and pcm and save them into specified directories.')
-@click.option('-n', '--ipynb', 'ipynb_file', type=str, help='input ipynb file path', required=True)
+@click.argument('ipynb_file', type=click.Path(exists=True))
 @click.option('-i', '--imgdir', 'img_out_dir', type=str, help='directory to store image', required=False)
 @click.option('-w', '--wavdir', 'wav_out_dir', type=str, help='directory to store audio', required=False)
 @click.option('-o', '--output', 'new_ipynb_filename', type=str, help='output ipynb file path', required=False)

@@ -13,44 +13,41 @@
 
 ### extract image files from ipynb
 
-`nbmediasplit -n input.ipynb -i image_out_dir`
+`nbmediasplit input.ipynb -i image_out_dir`
 
 or
 
-`nbmediasplit --ipynb input.ipynb --imgdir image_out_dir`
+`nbmediasplit input.ipynb --imgdir image_out_dir`
 
 The above command extract image files from `input.ipynb` and store them to `image_out_dir`.
-`-n` or `--ipynb` specifies input ipynb file.
 `-i` or `--imgdir` specifies a directory to store image files.
 Filenames of the stored image are numbered in sequential order(`0.png`, ...).
 
 ### extract audio files from ipynb
 
-`nbmediasplit -n input.ipynb -w wav_out_dir`
+`nbmediasplit input.ipynb -w wav_out_dir`
 
 or
 
-`nbmediasplit --ipynb input.ipynb --wavdir wav_out_dir`
+`nbmediasplit input.ipynb --wavdir wav_out_dir`
 
 The above command extract audio files from `input.ipynb` and store them to `wav_out_dir`.
-`-n` or `--ipynb` specifies input ipynb file.
 `-w` or `--wavdir` specifies a directory to store audio files.
 Filenames of the stored audio are numbered in sequential order(`0.wav`, ...).
 
 ### extract image and audio files from ipynb
 
-`nbmediasplit -n input.ipynb -i image_out_dir -w wav_out_dir`
+`nbmediasplit input.ipynb -i image_out_dir -w wav_out_dir`
 
 or
 
-`nbmediasplit --ipynb input.ipynb --imgdir image_out_dir --wavdir wav_out_dir`
+`nbmediasplit input.ipynb --imgdir image_out_dir --wavdir wav_out_dir`
 
 The above command does below things.
 
 * extract image files from `input.ipynb` and store them to `image_out_dir`
 * extract audio files from `input.ipynb` and store them to `wav_out_dir`.
 
-`-n` or `--ipynb` specifies input ipynb file.
 `-i` or `--imgdir` specifies a directory to store image files.
 `-w` or `--wavdir` specifies a directory to store audio files.
 Filenames of the stored image are numbered in sequential order(`0.png`, ...).
@@ -61,11 +58,11 @@ Filenames of the stored audio are numbered in sequential order(`0.wav`, ...).
 If you use `-o` or `--output` option like below command,
 you can convert `input.ipynb` to new ipynb file which refers to stored image files and audio files directly.
 
-`nbmediasplit -n input.ipynb -i image_out_dir -w wav_out_dir -o converted.ipynb`
+`nbmediasplit input.ipynb -i image_out_dir -w wav_out_dir -o converted.ipynb`
 
 or
 
-`nbmediasplit --ipynb input.ipynb --imgdir image_out_dir --wavdir wav_out_dir --output converted.ipynb`
+`nbmediasplit input.ipynb --imgdir image_out_dir --wavdir wav_out_dir --output converted.ipynb`
 
 The above command extract image files and audio files, and store them to specified directories, and generate new ipynb file `converted.ipynb`.
 `converted.ipynb` includes same content as `input.ipynb`, but base64 encoded image and audio data are replaced to HTML tag refers to stored files directly like below.

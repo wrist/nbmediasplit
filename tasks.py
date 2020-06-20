@@ -29,24 +29,24 @@ def cuitest(c, debug=False):
     """execute cui script test"""
     debug_arg = "-d" if debug else ""
     print("image extract test")
-    c.run("poetry run nbmediasplit -n {0} -i {1} {2}".format(TEST_INPUT, IMG_OUT_DIR, debug_arg))
+    c.run("poetry run nbmediasplit {0} -i {1} {2}".format(TEST_INPUT, IMG_OUT_DIR, debug_arg))
     print(os.listdir(IMG_OUT_DIR))
     shutil.rmtree(IMG_OUT_DIR)
 
     print("audio extract test")
-    c.run("poetry run nbmediasplit -n {0} -w {1} {2}".format(TEST_INPUT, WAV_OUT_DIR, debug_arg))
+    c.run("poetry run nbmediasplit {0} -w {1} {2}".format(TEST_INPUT, WAV_OUT_DIR, debug_arg))
     print(os.listdir(WAV_OUT_DIR))
     shutil.rmtree(WAV_OUT_DIR)
 
     print("both extract test")
-    c.run("poetry run nbmediasplit -n {0} -i {1} -w {2} {3}".format(TEST_INPUT, IMG_OUT_DIR, WAV_OUT_DIR, debug_arg))
+    c.run("poetry run nbmediasplit {0} -i {1} -w {2} {3}".format(TEST_INPUT, IMG_OUT_DIR, WAV_OUT_DIR, debug_arg))
     print(os.listdir(IMG_OUT_DIR))
     print(os.listdir(WAV_OUT_DIR))
     shutil.rmtree(IMG_OUT_DIR)
     shutil.rmtree(WAV_OUT_DIR)
 
     print("both extract and convert ipynb test")
-    c.run("poetry run nbmediasplit -n {0} -i {1} -w {2} -o {3} --img-prefix img --wav-prefix wav {4}".format(TEST_INPUT, IMG_OUT_DIR, WAV_OUT_DIR, TEST_OUTPUT, debug_arg))
+    c.run("poetry run nbmediasplit {0} -i {1} -w {2} -o {3} --img-prefix img --wav-prefix wav {4}".format(TEST_INPUT, IMG_OUT_DIR, WAV_OUT_DIR, TEST_OUTPUT, debug_arg))
     print(os.listdir(IMG_OUT_DIR))
     print(os.listdir(WAV_OUT_DIR))
     print(os.listdir(os.path.dirname(TEST_OUTPUT)))
