@@ -6,6 +6,7 @@ import os
 import shutil
 import json
 import filecmp
+import subprocess
 
 import bs4
 
@@ -14,6 +15,7 @@ cwd = os.path.dirname(__file__)
 INPUT_DIR = "{0}/input".format(cwd)
 input_ipynb = "{0}/test.ipynb".format(INPUT_DIR)
 out_dir = "{0}/output".format(cwd)
+output_ipynb = "{0}/test.converted.ipynb".format(out_dir)
 IMG_OUT_DIR = "{0}/img".format(out_dir)
 WAV_OUT_DIR = "{0}/wav".format(out_dir)
 
@@ -110,6 +112,10 @@ AUDIO_CODE_CELL = r"""
   }
 """
 
+def clean_outdir():
+    if os.path.exists(out_dir):
+        shutil.rmtree(out_dir)
+
 def test_version():
     assert __version__ == '0.1.2'
 
@@ -117,25 +123,23 @@ def test_version():
 @pytest.fixture
 def splitter():
     splitter = nbmediasplit.NBMediaSplitter(input_ipynb)
-    if os.path.exists(out_dir):
-        shutil.rmtree(out_dir)
+    clean_outdir()
 
     yield splitter
 
     # tear down
-    shutil.rmtree(out_dir)
+    clean_outdir()
 
 
 @pytest.fixture
 def empty_splitter():
     empty_splitter = nbmediasplit.NBMediaSplitter(None)
-    if os.path.exists(out_dir):
-        shutil.rmtree(out_dir)
+    clean_outdir()
 
     yield empty_splitter
 
     # tear down
-    shutil.rmtree(out_dir)
+    clean_outdir()
 
 
 def test_set_img_out_dir(splitter):
@@ -195,3 +199,68 @@ def test_processing_audio(empty_splitter):
 
     empty_splitter.save_waves()
     assert filecmp.cmp(exp_fname, "{0}/sin1kHz_1pt_FS48kHz.wav".format(INPUT_DIR))
+
+
+def test_command_line():
+    """same as `inv cuitest`"""
+    clean_outdir()
+
+    # image extract test
+    result = subprocess.run(["poetry", "run", "nbmediasplit", input_ipynb, "-i", IMG_OUT_DIR])
+
+    assert result.returncode == 0
+    assert os.path.exists(out_dir)
+    assert os.path.exists(IMG_OUT_DIR)
+    assert not os.path.exists(WAV_OUT_DIR)
+
+    image_list = os.listdir(IMG_OUT_DIR)
+    assert len(image_list) > 0
+
+    clean_outdir()
+
+    # audio extract test
+    result = subprocess.run(["poetry", "run", "nbmediasplit", input_ipynb, "-w", WAV_OUT_DIR])
+
+    assert result.returncode == 0
+    assert os.path.exists(out_dir)
+    assert os.path.exists(WAV_OUT_DIR)
+    assert not os.path.exists(IMG_OUT_DIR)
+
+    audio_list = os.listdir(WAV_OUT_DIR)
+    assert len(audio_list) > 0
+
+    clean_outdir()
+
+    # both extract test
+    result = subprocess.run(["poetry", "run", "nbmediasplit", input_ipynb, "-i", IMG_OUT_DIR, "-w", WAV_OUT_DIR])
+
+    assert result.returncode == 0
+    assert os.path.exists(out_dir)
+    assert os.path.exists(WAV_OUT_DIR)
+    assert os.path.exists(IMG_OUT_DIR)
+
+    image_list = os.listdir(IMG_OUT_DIR)
+    assert len(image_list) > 0
+    audio_list = os.listdir(WAV_OUT_DIR)
+    assert len(audio_list) > 0
+
+    clean_outdir()
+
+    # both extract and convert ipynb test
+    assert not os.path.exists(output_ipynb)
+
+    result = subprocess.run(["poetry", "run", "nbmediasplit", input_ipynb,
+        "-i", IMG_OUT_DIR, "-w", WAV_OUT_DIR, "-o", output_ipynb, "--img-prefix", "img", "--wav-prefix", "wav"])
+
+    assert result.returncode == 0
+    assert os.path.exists(out_dir)
+    assert os.path.exists(WAV_OUT_DIR)
+    assert os.path.exists(IMG_OUT_DIR)
+    assert os.path.exists(output_ipynb)
+
+    image_list = os.listdir(IMG_OUT_DIR)
+    assert len(image_list) > 0
+    audio_list = os.listdir(WAV_OUT_DIR)
+    assert len(audio_list) > 0
+
+    clean_outdir()
